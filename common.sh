@@ -193,6 +193,7 @@ echo "DELETE=${GITHUB_WORKSPACE}/openwrt/package/base-files/files/etc/deletefile
 echo "DEFAULT_PATH=${GITHUB_WORKSPACE}/openwrt/package/base-files/files/etc/default-setting" >> ${GITHUB_ENV}
 echo "KEEPD_PATH=${GITHUB_WORKSPACE}/openwrt/package/base-files/files/lib/upgrade/keep.d/base-files-essential" >> ${GITHUB_ENV}
 echo "GENE_PATH=${GITHUB_WORKSPACE}/openwrt/package/base-files/files/bin/config_generate" >> ${GITHUB_ENV}
+echo "LUCI2_CFG_PATH=${GITHUB_WORKSPACE}/openwrt/package/base-files/luci2/bin/config_generate" >> ${GITHUB_ENV}
 echo "CLEAR_PATH=${GITHUB_WORKSPACE}/openwrt/Clear" >> ${GITHUB_ENV}
 echo "Upgrade_Date=`date -d "$(date +'%Y-%m-%d %H:%M:%S')" +%s`" >> ${GITHUB_ENV}
 echo "Firmware_Date=$(date +%Y-%m%d-%H%M)" >> ${GITHUB_ENV}
@@ -987,7 +988,7 @@ elif [[ -n "${Ipv4_ipaddr}" ]]; then
   Kernel_Pat="$(echo ${Ipv4_ipaddr} |grep -Eo "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+")"
   ipadd_Pat="$(echo ${ipadd} |grep -Eo "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+")"
   if [[ -n "${Kernel_Pat}" ]] && [[ -n "${ipadd_Pat}" ]]; then
-     sed -i "s/${ipadd}/${Ipv4_ipaddr}/g" "${GENE_PATH}"
+     sed -i "s/${ipadd}/${Ipv4_ipaddr}/g" "${LUCI2_CFG_PATH}"
      echo "openwrt后台IP[${Ipv4_ipaddr}]修改完成"
    else
      echo "TIME r \"因IP获取有错误，后台IP更换不成功，请检查IP是否填写正确，如果填写正确，那就是获取不了源码内的IP了\"" >> ${HOME_PATH}/CHONGTU
@@ -1000,7 +1001,7 @@ elif [[ -n "${Netmask_netm}" ]]; then
   Kernel_netm="$(echo ${Netmask_netm} |grep -Eo "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+")"
   ipadd_mas="$(echo ${netmas} |grep -Eo "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+")"
   if [[ -n "${Kernel_netm}" ]] && [[ -n "${ipadd_mas}" ]]; then
-     sed -i "s/${netmas}/${Netmask_netm}/g" "${GENE_PATH}"
+     sed -i "s/${netmas}/${Netmask_netm}/g" "${LUCI2_CFG_PATH}"
      echo "子网掩码[${Netmask_netm}]修改完成"
    else
      echo "TIME r \"因子网掩码获取有错误，子网掩码设置失败，请检查IP是否填写正确，如果填写正确，那就是获取不了源码内的IP了\"" >> ${HOME_PATH}/CHONGTU
@@ -1010,7 +1011,7 @@ fi
 if [[ "${Op_name}" == "0" ]] || [[ -z "${Op_name}" ]]; then
   echo "使用源码默认主机名"
 elif [[ -n "${Op_name}" ]] && [[ -n "${opname}" ]]; then
-  sed -i "s/${opname}/${Op_name}/g" "${GENE_PATH}"
+  sed -i "s/${opname}/${Op_name}/g" "${LUCI2_CFG_PATH}"
   echo "主机名[${Op_name}]修改完成"
 fi
 
@@ -1019,7 +1020,7 @@ if [[ "${Gateway_Settings}" == "0" ]] || [[ -z "${Gateway_Settings}" ]]; then
 elif [[ -n "${Gateway_Settings}" ]]; then
   Router_gat="$(echo ${Gateway_Settings} |grep -Eo "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+")"
   if [[ -n "${Router_gat}" ]]; then
-    sed -i "$lan\set network.lan.gateway='${Gateway_Settings}'" "${GENE_PATH}"
+    sed -i "$lan\set network.lan.gateway='${Gateway_Settings}'" "${LUCI2_CFG_PATH}"
     echo "网关[${Gateway_Settings}]修改完成"
   else
     echo "TIME r \"因子网关IP获取有错误，网关IP设置失败，请检查IP是否填写正确，如果填写正确，那就是获取不了源码内的IP了\"" >> ${HOME_PATH}/CHONGTU
@@ -1031,7 +1032,7 @@ if [[ "${DNS_Settings}" == "0" ]] || [[ -z "${DNS_Settings}" ]]; then
 elif [[ -n "${DNS_Settings}" ]]; then
   ipa_dns="$(echo ${DNS_Settings} |grep -Eo "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+")"
   if [[ -n "${ipa_dns}" ]]; then
-     sed -i "$lan\set network.lan.dns='${DNS_Settings}'" "${GENE_PATH}"
+     sed -i "$lan\set network.lan.dns='${DNS_Settings}'" "${LUCI2_CFG_PATH}"
      echo "DNS[${DNS_Settings}]设置完成"
   else
     echo "TIME r \"因DNS获取有错误，DNS设置失败，请检查DNS是否填写正确\"" >> ${HOME_PATH}/CHONGTU
