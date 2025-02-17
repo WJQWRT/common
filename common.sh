@@ -120,6 +120,7 @@ COOLSNOWWOLF)
   export SOURCE_OWNER="Lean's"
   export LUCI_EDITION="23.05"
   export DIY_WORK="${FOLDER_NAME}master"
+  export GENE_PATH=${GITHUB_WORKSPACE}/openwrt/package/base-files/luci2/bin/config_generate
 ;;
 LIENOL)
   export REPO_URL="https://github.com/Lienol/openwrt"
@@ -127,6 +128,7 @@ LIENOL)
   export SOURCE_OWNER="Lienol's"
   export LUCI_EDITION="$(echo "${REPO_BRANCH}" |sed 's/openwrt-//g')"
   export DIY_WORK="${FOLDER_NAME}$(echo "${LUCI_EDITION}" |sed "s/\.//g" |sed "s/\-//g")"
+  export GENE_PATH=${GITHUB_WORKSPACE}/openwrt/package/base-files/files/bin/config_generate
 ;;
 IMMORTALWRT)
   if [[ "${REPO_BRANCH}" == "mt798x" ]]; then
@@ -136,12 +138,14 @@ IMMORTALWRT)
     export LUCI_EDITION="mt798x"
     export DIY_WORK="hanwckf2102"
     export REPO_BRANCH="openwrt-21.02"
+    export GENE_PATH=${GITHUB_WORKSPACE}/openwrt/package/base-files/files/bin/config_generate
   else
     export REPO_URL="https://github.com/immortalwrt/immortalwrt"
     export SOURCE="Immortalwrt"
     export SOURCE_OWNER="ctcgfw's"
     export LUCI_EDITION="$(echo "${REPO_BRANCH}" |sed 's/openwrt-//g')"
     export DIY_WORK="${FOLDER_NAME}$(echo "${LUCI_EDITION}" |sed "s/\.//g" |sed "s/\-//g")"
+    export GENE_PATH=${GITHUB_WORKSPACE}/openwrt/package/base-files/files/bin/config_generate
   fi
 ;;
 XWRT)
@@ -150,6 +154,7 @@ XWRT)
   export SOURCE_OWNER="ptpt52's"
   export LUCI_EDITION="${REPO_BRANCH}"
   export DIY_WORK="${FOLDER_NAME}$(echo "${LUCI_EDITION}" |sed "s/\.//g" |sed "s/\-//g")"
+  export GENE_PATH=${GITHUB_WORKSPACE}/openwrt/package/base-files/files/bin/config_generate
 ;;
 OFFICIAL)
   export REPO_URL="https://github.com/openwrt/openwrt"
@@ -157,6 +162,7 @@ OFFICIAL)
   export SOURCE_OWNER="openwrt's"
   export LUCI_EDITION="$(echo "${REPO_BRANCH}" |sed 's/openwrt-//g')"
   export DIY_WORK="${FOLDER_NAME}$(echo "${LUCI_EDITION}" |sed "s/\.//g" |sed "s/\-//g")"
+  export GENE_PATH=${GITHUB_WORKSPACE}/openwrt/package/base-files/files/bin/config_generate
 ;;
 *)
   TIME r "不支持${SOURCE_CODE}此源码，当前只支持COOLSNOWWOLF、LIENOL、IMMORTALWRT、XWRT、OFFICIAL"
@@ -193,7 +199,8 @@ echo "DELETE=${GITHUB_WORKSPACE}/openwrt/package/base-files/files/etc/deletefile
 echo "DEFAULT_PATH=${GITHUB_WORKSPACE}/openwrt/package/base-files/files/etc/default-setting" >> ${GITHUB_ENV}
 echo "KEEPD_PATH=${GITHUB_WORKSPACE}/openwrt/package/base-files/files/lib/upgrade/keep.d/base-files-essential" >> ${GITHUB_ENV}
 #echo "GENE_PATH=${GITHUB_WORKSPACE}/openwrt/package/base-files/files/bin/config_generate" >> ${GITHUB_ENV}
-echo "GENE_PATH=${GITHUB_WORKSPACE}/openwrt/package/base-files/luci2/bin/config_generate" >> ${GITHUB_ENV}
+#echo "GENE_PATH=${GITHUB_WORKSPACE}/openwrt/package/base-files/luci2/bin/config_generate" >> ${GITHUB_ENV}
+echo "GENE_PATH=${GENE_PATH}" >> ${GITHUB_ENV}
 echo "CLEAR_PATH=${GITHUB_WORKSPACE}/openwrt/Clear" >> ${GITHUB_ENV}
 echo "Upgrade_Date=`date -d "$(date +'%Y-%m-%d %H:%M:%S')" +%s`" >> ${GITHUB_ENV}
 echo "Firmware_Date=$(date +%Y-%m%d-%H%M)" >> ${GITHUB_ENV}
