@@ -580,6 +580,7 @@ sudo chmod +x "${FILES_PATH}/etc/init.d/Postapplication"
 cp -Rf ${HOME_PATH}/build/common/custom/networkdetection "${FILES_PATH}/etc/networkdetection"
 sudo chmod +x "${FILES_PATH}/etc/networkdetection"
 
+# 加入openwrt.sh
 [[ ! -d "${FILES_PATH}/usr/bin" ]] && mkdir -p ${FILES_PATH}/usr/bin
 cp -Rf ${HOME_PATH}/build/common/custom/openwrt.sh "${FILES_PATH}/usr/bin/openwrt"
 sudo chmod +x "${FILES_PATH}/usr/bin/openwrt"
@@ -688,7 +689,6 @@ else
   TIME r "SSH连接固件输入命令'openwrt'可进行修改后台IP，清空密码和还原出厂设置操作"
 fi
 TIME r ""
-TIME g "CPU性能：8370C > 8272CL > 8171M > E5系列"
 TIME r ""
 }
 
@@ -1941,7 +1941,7 @@ cd ${GITHUB_WORKSPACE}
 start_path="${GITHUB_WORKSPACE}/build/${FOLDER_NAME}/relevance/settings.ini"
 chmod -R +x ${start_path} && source ${start_path}
 if [[ "${CPU_SELECTION}" =~ (E5|false) ]]; then
-  kaisbianyixx="弃用E5-编译"
+  kaisbianyixx="编译"
 else
   kaisbianyixx="使用${CPU_SELECTION}-编译"
 fi
