@@ -271,6 +271,7 @@ function Diy_checkout() {
 # 下载源码后，进行源码微调和增加插件源
 cd ${HOME_PATH}
 # 增加一些应用
+echo 1
 curl -fsSL "${FEEDS_CONF}" -o "${HOME_PATH}/feeds.conf.default"
 curl -fsSL "${BASE_FILES}" -o "${GENE_PATH}"
 curl -fsSL "${UPGRADE_KEEP}" -o "${KEEPD_PATH}"
@@ -280,10 +281,14 @@ if ! grep -q "auto-scripts" "${HOME_PATH}/Config.in"; then
   echo 'source "package/auto-scripts/Config.in"' >> ${HOME_PATH}/Config.in
 fi
 
+echo 2
+
 sed -i "s/SOURCE/${SOURCE}/g" "${DEFAULT_PATH}"
 sed -i "s/LUCI_EDITION/${LUCI_EDITION}/g" "${DEFAULT_PATH}"
 sed -i 's/root:.*/root::0:0:99999:7:::/g' ${FILES_PATH}/etc/shadow
 grep -q "admin:" ${FILES_PATH}/etc/shadow && sed -i 's/admin:.*/admin::0:0:99999:7:::/g' ${FILES_PATH}/etc/shadow
+
+echo 3
 
 echo '#!/bin/sh' > "${DELETE}" && sudo chmod +x "${DELETE}"
 [[ -d "${HOME_PATH}/doc" ]] && rm -rf ${HOME_PATH}/doc
@@ -292,6 +297,8 @@ echo '#!/bin/sh' > "${DELETE}" && sudo chmod +x "${DELETE}"
 if [[ -n "${BENDI_VERSION}" ]]; then
   git pull > /dev/null 2>&1
 fi
+
+echo 4
 
 # 添加自定义插件源
 echo "src-git danshui https://github.com/WJQWRT/openwrt-package.git;$SOURCE" >> feeds.conf.default
