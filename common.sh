@@ -301,7 +301,7 @@ fi
 echo 4
 
 # 添加自定义插件源
-echo "src-git danshui https://github.com/WJQWRT/openwrt-package.git;$SOURCE" >> feeds.conf.default
+echo "src-git danshui https://github.com/281677160/openwrt-package.git;$SOURCE" >> feeds.conf.default
 ./scripts/feeds update -a > /dev/null 2>&1
  
  z="*luci-theme-argon*,*luci-app-argon-config*,*luci-theme-Butterfly*,*luci-theme-netgear*,*luci-theme-atmaterial*, \
