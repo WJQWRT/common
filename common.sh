@@ -320,9 +320,13 @@ if [[ ! "${REPO_BRANCH}" =~ ^(main|master|2410|(openwrt-)?(24\.10))$ ]]; then
   rm -rf ${HOME_PATH}/feeds/danshui/luci-app-fancontrol
 fi
 
+echo 5
+
 # 更新golang和node版本
 gitsvn https://github.com/sbwml/packages_lang_golang ${HOME_PATH}/feeds/packages/lang/golang
 gitsvn https://github.com/sbwml/feeds_packages_lang_node-prebuilt ${HOME_PATH}/feeds/packages/lang/node
+
+echo 6
 
 # store插件依赖
 if [[ -d "${HOME_PATH}/feeds/danshui/relevance/nas-packages/network/services" ]] && [[ ! -d "${HOME_PATH}//package/network/services/ddnsto" ]]; then
@@ -332,8 +336,12 @@ if [[ -d "${HOME_PATH}/feeds/danshui/relevance/nas-packages/multimedia/ffmpeg-re
   mv ${HOME_PATH}/feeds/danshui/relevance/nas-packages/multimedia/ffmpeg-remux ${HOME_PATH}/feeds/packages/multimedia/ffmpeg-remux
 fi
 
+echo 7
+
 # tproxy补丁
 source ${HOME_PATH}/build/common/Share/tproxy/netsupport.sh
+
+echo 8
 
 # 降低luci-app-ssr-plus的shadowsocks-rust版本
 if [[ "${REPO_BRANCH}" == *"18.06"* ]] || [[ "${REPO_BRANCH}" == *"19.07"* ]] || [[ "${REPO_BRANCH}" == *"21.02"* ]] || [[ "${REPO_BRANCH}" == *"22.03"* ]]; then
@@ -354,6 +362,8 @@ if [[ ! -d "${HOME_PATH}/feeds/packages/devel/packr" ]]; then
   gitsvn https://github.com/WJQWRT/common/tree/main/Share/packr ${HOME_PATH}/feeds/packages/devel/packr
 fi
 
+echo 9
+
 
 # N1类型固件修改
 if [[ -d "${HOME_PATH}/target/linux/armsr" ]]; then
@@ -364,12 +374,16 @@ elif [[ -d "${HOME_PATH}/target/linux/armvirt" ]]; then
   sed -i "s?FEATURES+=.*?FEATURES+=targz?g" "${features_file}"
 fi
 
+echo 10
+
 # 给固件保留配置更新固件的保留项目
 cat >> "${KEEPD_PATH}" <<-EOF
 /etc/config/AdGuardHome.yaml
 /www/luci-static/argon/background
 /etc/smartdns/custom.conf
 EOF
+
+
 }
 
 
