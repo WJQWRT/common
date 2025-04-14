@@ -3,18 +3,18 @@
 # common Module by 28677160
 # matrix.target=${FOLDER_NAME}
 
-ACTIONS_VERSION="1.0.8"
+ACTIONS_VERSION="2.1.0"
 Compte=$(date +%Y年%m月%d号%H时%M分)
 function TIME() {
-    case $1 in
+  case $1 in
     r) export Color="\e[31m";;
     g) export Color="\e[32m";;
     b) export Color="\e[34m";;
     y) export Color="\e[33m";;
     z) export Color="\e[35m";;
     l) export Color="\e[36m";;
-    esac
-    echo -e "\e[36m\e[0m ${Color}${2}\e[0m"
+  esac
+echo -e "\e[36m\e[0m ${Color}${2}\e[0m"
 }
 
 function settings_variable() {
@@ -34,15 +34,15 @@ if [[ -n "${INPUTS_REPO_BRANCH}" ]]; then
   SOURCE_CODE="${SOURCE_CODE}"
   REPO_BRANCH="${INPUTS_REPO_BRANCH}"
   CONFIG_FILE="$(echo "${INPUTS_CONFIG_FILE}" |cut -d"/" -f2)"
-  CPU_SELECTION="${INPUTS_CPU_SELECTION}"
+  RETAIN_MINUTE="${INPUTS_RETAIN_MINUTE}"
   INFORMATION_NOTICE="${INPUTS_INFORMATION_NOTICE}"
   UPLOAD_FIRMWARE="${INPUTS_UPLOAD_FIRMWARE}"
   UPLOAD_RELEASE="${INPUTS_UPLOAD_RELEASE}"
   CACHEWRTBUILD_SWITCH="${INPUTS_CACHEWRTBUILD_SWITCH}"
   UPDATE_FIRMWARE_ONLINE="${INPUTS_UPDATE_FIRMWARE_ONLINE}"
-  COMPILATION_INFORMATION="${INPUTS_COMPILATION_INFORMATION}"
+  COMPILATION_INFORMATION="${COMPILATION_INFORMATION}"
   RETAIN_MINUTE="${RETAIN_MINUTE}"
-  KEEP_LATEST="${KEEP_LATEST}"
+  KEEP_LATEST="${INPUTS_KEEP_LATEST}"
   echo "SSH_ACTION=${INPUTS_SSH_ACTION}" >> ${GITHUB_ENV}
   WAREHOUSE_MAN="${GIT_REPOSITORY##*/}"
 else
@@ -162,20 +162,33 @@ OFFICIAL)
   export FEEDS_CONF="$RAW_WEB/feeds.conf.default"
   export BASE_FILES="$RAW_WEB/package/base-files/files/bin/config_generate"
 ;;
-PADAVANONLY)
-  export REPO_URL="https://github.com/padavanonly/immortalwrt-mt798x-24.10"
-  export SOURCE="Mt798x"
-  export SOURCE_OWNER="PADAVANONLY's"
-  if [[ "${REPO_BRANCH}" == "2410" ]]; then
-      export LUCI_EDITION="24.10"
+MT798X)
+  if [[ "${REPO_BRANCH}" == "hanwckf-21.02" ]]; then
+    export REPO_URL="https://github.com/hanwckf/immortalwrt-mt798x"
+    export SOURCE="Mt798x"
+    export SOURCE_OWNER="hanwckf's"
+    export REPO_BRANCH="openwrt-21.02"
+    export LUCI_EDITION="$(echo "${REPO_BRANCH}" |sed 's/openwrt-//g')"
+    export DIY_WORK="hanwckf2102"
+    export CON_TENTCOM="$(echo "${REPO_URL}" |cut -d"/" -f4-5)"
+    export RAW_WEB="https://raw.githubusercontent.com/${CON_TENTCOM}/${REPO_BRANCH}"
+    export FEEDS_CONF="$RAW_WEB/feeds.conf.default"
+    export BASE_FILES="$RAW_WEB/package/base-files/files/bin/config_generate"
   else
+    export REPO_URL="https://github.com/padavanonly/immortalwrt-mt798x-24.10"
+    export SOURCE="Mt798x"
+    export SOURCE_OWNER="PADAVANONLY's"
+    if [[ "${REPO_BRANCH}" == "2410" ]]; then
+      export LUCI_EDITION="24.10"
+    else
       export LUCI_EDITION="$(echo "${REPO_BRANCH}" |sed 's/openwrt-//g')"
+    fi
+    export DIY_WORK="${FOLDER_NAME}$(echo "${LUCI_EDITION}" |sed "s/\.//g" |sed "s/\-//g")"
+    export CON_TENTCOM="$(echo "${REPO_URL}" |cut -d"/" -f4-5)"
+    export RAW_WEB="https://raw.githubusercontent.com/${CON_TENTCOM}/${REPO_BRANCH}"
+    export FEEDS_CONF="$RAW_WEB/feeds.conf.default"
+    export BASE_FILES="$RAW_WEB/package/base-files/files/bin/config_generate"
   fi
-  export DIY_WORK="${FOLDER_NAME}$(echo "${LUCI_EDITION}" |sed "s/\.//g" |sed "s/\-//g")"
-  export CON_TENTCOM="$(echo "${REPO_URL}" |cut -d"/" -f4-5)"
-  export RAW_WEB="https://raw.githubusercontent.com/${CON_TENTCOM}/${REPO_BRANCH}"
-  export FEEDS_CONF="$RAW_WEB/feeds.conf.default"
-  export BASE_FILES="$RAW_WEB/package/base-files/files/bin/config_generate"
 ;;
 *)
   TIME r "不支持${SOURCE_CODE}此源码，当前只支持COOLSNOWWOLF、LIENOL、IMMORTALWRT、XWRT、OFFICIAL"
@@ -204,6 +217,7 @@ echo "SOURCE=${SOURCE}" >> ${GITHUB_ENV}
 echo "LUCI_EDITION=${LUCI_EDITION}" >> ${GITHUB_ENV}
 echo "SOURCE_OWNER=${SOURCE_OWNER}" >> ${GITHUB_ENV}
 echo "DIY_WORK=${DIY_WORK}" >> ${GITHUB_ENV}
+echo "DIYPART_PATH=${GITHUB_WORKSPACE}/openwrt/build/${FOLDER_NAME}/${DIY_PART_SH}" >> ${GITHUB_ENV}
 echo "BUILD_PATH=${GITHUB_WORKSPACE}/openwrt/build/${FOLDER_NAME}" >> ${GITHUB_ENV}
 echo "FILES_PATH=${GITHUB_WORKSPACE}/openwrt/package/base-files/files" >> ${GITHUB_ENV}
 echo "REPAIR_PATH=${GITHUB_WORKSPACE}/openwrt/package/base-files/files/etc/openwrt_release" >> ${GITHUB_ENV}
@@ -283,7 +297,7 @@ fi
 
 echo 2
 
-sed -i "s/SOURCE/${SOURCE}/g" "${DEFAULT_PATH}"
+sed -i "s/ZHUJI_MING/${SOURCE}/g" "${DEFAULT_PATH}"
 sed -i "s/LUCI_EDITION/${LUCI_EDITION}/g" "${DEFAULT_PATH}"
 sed -i 's/root:.*/root::0:0:99999:7:::/g' ${FILES_PATH}/etc/shadow
 grep -q "admin:" ${FILES_PATH}/etc/shadow && sed -i 's/admin:.*/admin::0:0:99999:7:::/g' ${FILES_PATH}/etc/shadow
@@ -301,104 +315,48 @@ fi
 echo 4
 
 # 添加自定义插件源
-echo "src-git danshui https://github.com/281677160/openwrt-package.git;$SOURCE" >> feeds.conf.default
-./scripts/feeds update -a > /dev/null 2>&1
- 
- z="*luci-theme-argon*,*luci-app-argon-config*,*luci-theme-Butterfly*,*luci-theme-netgear*,*luci-theme-atmaterial*, \
- luci-theme-rosy,luci-theme-darkmatter,luci-theme-infinityfreedom,luci-theme-design,luci-app-design-config, \
- luci-theme-bootstrap-mod,luci-theme-freifunk-generic,luci-theme-opentomato,luci-theme-kucat, \
- luci-app-eqos,adguardhome,luci-app-adguardhome,mosdns,luci-app-mosdns,luci-app-openclash, \
- luci-app-gost,gost,luci-app-smartdns,smartdns,luci-app-wizard,luci-app-msd_lite,msd_lite, \
- luci-app-ssr-plus,*luci-app-passwall*,v2dat,v2ray-geodata, \
- luci-app-wechatpush,v2ray-core,v2ray-plugin,v2raya,xray-core,xray-plugin,luci-app-alist,alist"
- t=(${z//,/ })
- for x in ${t[@]}; do \
-   find . -type d -name "${x}" |grep -v 'danshui\|freifunk' |xargs -i rm -rf {}; \
- done
-
-if [[ ! "${REPO_BRANCH}" =~ ^(main|master|2410|(openwrt-)?(24\.10))$ ]]; then
-  rm -rf ${HOME_PATH}/feeds/danshui/luci-app-fancontrol
+CLASH_FENZHIHAO="$(grep -E '^export OpenClash_branch=' $BUILD_PARTSH |cut -d '"' -f2)"
+if [[ "${CLASH_FENZHIHAO}" == "1" ]]; then
+  CLASH_BRANCH="dev"
+else
+  CLASH_BRANCH="master"
+fi
+if grep -q "src-git-full" "${HOME_PATH}/feeds.conf.default"; then
+  SRC_LIANJIE="$(grep -E '^src-git-full luci https' "${HOME_PATH}/feeds.conf.default" | sed -E 's/src-git-full luci (https?:\/\/[^;]+).*/\1/')"
+  a=$(grep -E '^src-git-full luci https' "feeds.conf.default")
+  if [[ -n "$(echo "$a" |grep -E '\;')" ]]; then
+    SRC_FENZHIHAO="$(grep -E '^src-git-full luci https' "${HOME_PATH}/feeds.conf.default" | sed -E 's/.*;(.+)/\1/')"
+  fi
+else
+ SRC_LIANJIE="$(grep -E '^src-git luci https' "${HOME_PATH}/feeds.conf.default" | sed -E 's/src-git luci (https?:\/\/[^;]+).*/\1/')"
+  a=$(grep -E '^src-git luci https' "feeds.conf.default")
+  if [[ -n "$(echo "$a" |grep -E '\;')" ]]; then
+    SRC_FENZHIHAO="$(grep -E '^src-git luci https' "${HOME_PATH}/feeds.conf.default" | sed -E 's/.*;(.+)/\1/')"
+  fi
+fi
+if [[ -n "${SRC_FENZHIHAO}" ]]; then
+  git clone -q --single-branch --depth=1 --branch=${SRC_FENZHIHAO} ${SRC_LIANJIE} ${HOME_PATH}/SRC_LUCI
+else
+  git clone -q --depth 1 ${SRC_LIANJIE} ${HOME_PATH}/SRC_LUCI
+fi
+if [[ -d "${HOME_PATH}/SRC_LUCI/modules/luci-mod-system" ]]; then
+  THEME_BRANCH="Theme2"
+  rm -rf ${HOME_PATH}/SRC_LUCI
+  gitsvn https://github.com/jerrykuku/luci-theme-argon.git ${HOME_PATH}/package/luci-theme-argon
+else
+  THEME_BRANCH="Theme1"
+  rm -rf ${HOME_PATH}/SRC_LUCI
+  gitsvn https://github.com/jerrykuku/luci-theme-argon/tree/18.06 ${HOME_PATH}/package/luci-theme-argon
 fi
 
-echo 5
+echo "src-git danshui https://github.com/281677160/openwrt-package.git;$SOURCE" >> ${HOME_PATH}/feeds.conf.default
+echo "src-git dstheme https://github.com/281677160/openwrt-package.git;$THEME_BRANCH" >> ${HOME_PATH}/feeds.conf.default
+echo "src-git OpenClash https://github.com/vernesong/OpenClash.git;$CLASH_BRANCH" >> ${HOME_PATH}/feeds.conf.default
 
-# 更新golang和node版本
-gitsvn https://github.com/sbwml/packages_lang_golang ${HOME_PATH}/feeds/packages/lang/golang
-gitsvn https://github.com/sbwml/feeds_packages_lang_node-prebuilt ${HOME_PATH}/feeds/packages/lang/node
-
-echo 6
-
-# store插件依赖
-if [[ -d "${HOME_PATH}/feeds/danshui/relevance/nas-packages/network/services" ]] && [[ ! -d "${HOME_PATH}//package/network/services/ddnsto" ]]; then
-  mv ${HOME_PATH}/feeds/danshui/relevance/nas-packages/network/services/* ${HOME_PATH}/package/network/services
-fi
-if [[ -d "${HOME_PATH}/feeds/danshui/relevance/nas-packages/multimedia/ffmpeg-remux" ]] && [[ ! -d "${HOME_PATH}/feeds/packages/multimedia/ffmpeg-remux" ]]; then
-  mv ${HOME_PATH}/feeds/danshui/relevance/nas-packages/multimedia/ffmpeg-remux ${HOME_PATH}/feeds/packages/multimedia/ffmpeg-remux
-fi
-
-echo 7
-
-# tproxy补丁
-source ${HOME_PATH}/build/common/Share/tproxy/netsupport.sh
-
-echo 8
-
-# 降低luci-app-ssr-plus的shadowsocks-rust版本
-if [[ "${REPO_BRANCH}" == *"18.06"* ]] || [[ "${REPO_BRANCH}" == *"19.07"* ]] || [[ "${REPO_BRANCH}" == *"21.02"* ]] || [[ "${REPO_BRANCH}" == *"22.03"* ]]; then
-   gitsvn https://github.com/WJQWRT/common/blob/main/Share/shadowsocks-rust/Makefile ${HOME_PATH}/feeds/danshui/luci-app-ssr-plus/shadowsocks-rust/Makefile
-   gitsvn https://github.com/WJQWRT/common/blob/main/Share/shadowsocks-rust/Makefile ${HOME_PATH}/feeds/danshui/relevance/passwall-packages/shadowsocks-rust/Makefile
-fi
-
-if [[ ! -d "${HOME_PATH}/package/network/config/firewall4" ]]; then
-    rm -rf ${HOME_PATH}/feeds/danshui/luci-app-nikki
-    rm -rf ${HOME_PATH}/feeds/danshui/luci-app-homeproxy
-fi
-
-if [[ ! -d "${HOME_PATH}/feeds/packages/lang/rust" ]]; then
-    gitsvn https://github.com/openwrt/packages/tree/openwrt-23.05/lang/rust ${HOME_PATH}/feeds/packages/lang/rust
-fi
-
-if [[ ! -d "${HOME_PATH}/feeds/packages/devel/packr" ]]; then
-  gitsvn https://github.com/WJQWRT/common/tree/main/Share/packr ${HOME_PATH}/feeds/packages/devel/packr
-fi
-
-echo 9
-
-
-# N1类型固件修改
-if [[ -d "${HOME_PATH}/target/linux/armsr" ]]; then
-  features_file="${HOME_PATH}/target/linux/armsr/Makefile"
-  sed -i "s?FEATURES+=.*?FEATURES+=targz?g" "${features_file}"
-elif [[ -d "${HOME_PATH}/target/linux/armvirt" ]]; then
-  features_file="${HOME_PATH}/target/linux/armvirt/Makefile"
-  sed -i "s?FEATURES+=.*?FEATURES+=targz?g" "${features_file}"
-fi
-
-echo 10
-
-# 给固件保留配置更新固件的保留项目
-cat >> "${KEEPD_PATH}" <<-EOF
-/etc/config/AdGuardHome.yaml
-/www/luci-static/argon/background
-/etc/smartdns/custom.conf
-EOF
-
-
-}
-
-
-function Diy_Wenjian() {
 # 增加中文语言包
 A_PATH="$HOME_PATH/package"
-C_PATH="$HOME_PATH/feeds/luci/modules/luci-mod-system/root/usr/share/luci/menu.d/luci-mod-system.json"
-echo "LUCI_BANBEN=$C_PATH" >> $GITHUB_ENV
-if [[ -f "${C_PATH}" ]]; then
-  gitsvn https://github.com/WJQWRT/openwrt-package/tree/Theme2 ${HOME_PATH}/package/Luci_theme
-else
-  gitsvn https://github.com/WJQWRT/openwrt-package/tree/Theme1 ${HOME_PATH}/package/Luci_theme
-fi
-if [[ -z "$(find "$A_PATH" -type d -name "default-settings" -print)" ]] && [[ -f "$C_PATH" ]]; then
-  gitsvn https://github.com/WJQWRT/common/tree/main/Share/default-settings ${HOME_PATH}/package/default-settings
+if [[ -z "$(find "$A_PATH" -type d -name "default-settings" -print)" ]] && [[ -d "$C_PATH" ]]; then
+  gitsvn https://github.com/281677160/common/tree/main/Share/default-settings ${HOME_PATH}/package/default-settings
   if grep -q "libustream-wolfssl" "${HOME_PATH}/include/target.mk"; then
     sed -i 's?libustream-wolfssl?libustream-openssl?g' "${HOME_PATH}/include/target.mk"
   fi
@@ -411,7 +369,7 @@ if [[ -z "$(find "$A_PATH" -type d -name "default-settings" -print)" ]] && [[ -f
   if ! grep -q "default-settings" "${HOME_PATH}/include/target.mk"; then
     sed -i 's?DEFAULT_PACKAGES:=?DEFAULT_PACKAGES:=default-settings luci luci-compat luci-lib-base luci-lib-ipkg ?g' "${HOME_PATH}/include/target.mk"
   fi
-elif [[ -z "$(find "$A_PATH" -type d -name "default-settings" -print)" ]] && [[ ! -f "$C_PATH" ]]; then
+elif [[ -z "$(find "$A_PATH" -type d -name "default-settings" -print)" ]] && [[ ! -d "$C_PATH" ]]; then
   gitsvn https://github.com/WJQWRT/common/tree/main/Share/default-setting ${HOME_PATH}/package/default-settings
   if grep -q "libustream-wolfssl" "${HOME_PATH}/include/target.mk"; then
     sed -i 's?libustream-wolfssl?libustream-openssl?g' "${HOME_PATH}/include/target.mk"
@@ -427,6 +385,13 @@ elif [[ -z "$(find "$A_PATH" -type d -name "default-settings" -print)" ]] && [[ 
   fi
 fi
 
+if ! grep -q "default-settings" "${HOME_PATH}/include/target.mk"; then
+  sed -i 's?DEFAULT_PACKAGES:=?DEFAULT_PACKAGES:=default-settings luci ?g' "${HOME_PATH}/include/target.mk"
+fi
+
+# 删除前面下载而又不需要了的
+rm -rf ${HOME_PATH}/SRC_LUCI
+
 # zzz-default-settings文件
 ZZZ_PATH="$(find "$A_PATH" -name "*-default-settings" -not -path "A/exclude_dir/*" -print)"
 if [[ -n "${ZZZ_PATH}" ]]; then  
@@ -441,8 +406,68 @@ if [[ -n "${ZZZ_PATH}" ]]; then
   grep -q "openwrt_banner" "${ZZZ_PATH}" && sed -i '/openwrt_banner/d' "${ZZZ_PATH}"
 fi
 
-if ! grep -q "default-settings" "${HOME_PATH}/include/target.mk"; then
-  sed -i 's?DEFAULT_PACKAGES:=?DEFAULT_PACKAGES:=default-settings luci ?g' "${HOME_PATH}/include/target.mk"
+# 更新feeds
+./scripts/feeds update -a > /dev/null 2>&1
+
+z="luci-theme-argon,luci-app-argon-config,luci-theme-Butterfly,luci-theme-netgear,luci-theme-atmaterial, \
+luci-theme-rosy,luci-theme-darkmatter,luci-theme-infinityfreedom,luci-theme-design,luci-app-design-config, \
+luci-theme-bootstrap-mod,luci-theme-freifunk-generic,luci-theme-opentomato,luci-theme-kucat, \
+luci-app-eqos,adguardhome,luci-app-adguardhome,mosdns,luci-app-mosdns,luci-app-openclash, \
+luci-app-gost,gost,luci-app-smartdns,smartdns,luci-app-wizard,luci-app-msd_lite,msd_lite, \
+luci-app-ssr-plus,luci-app-passwall,v2dat,v2ray-geodata, \
+luci-app-wechatpush,v2ray-core,v2ray-plugin,v2raya,xray-core,xray-plugin,luci-app-alist,alist"
+t=(${z//,/ })
+for x in "${t[@]}"; do
+    find ./feeds ./package \
+        -path './feeds/danshui' -prune -o \
+        -path './feeds/dstheme' -prune -o \
+        -path './feeds/OpenClash' -prune -o \
+        -path './package/luci-theme-argon' -prune -o \
+        -name "$x" -type d -exec rm -rf {} +
+done
+
+if [[ ! "${REPO_BRANCH}" =~ ^(main|master|(openwrt-)?(24\.10))$ ]]; then
+  rm -rf ${HOME_PATH}/feeds/danshui/luci-app-fancontrol
+fi
+
+if [[ "${REPO_BRANCH}" =~ ^(2410|(openwrt-)?(24\.10))$ ]]; then
+  rm -rf ${HOME_PATH}/feeds/danshui/luci-app-quickstart
+  rm -rf ${HOME_PATH}/feeds/danshui/luci-app-linkease
+  rm -rf ${HOME_PATH}/feeds/danshui/luci-app-istorex
+fi
+
+if [[ ! -d "${HOME_PATH}/package/network/config/firewall4" ]]; then
+    rm -rf ${HOME_PATH}/feeds/danshui/luci-app-nikki
+    rm -rf ${HOME_PATH}/feeds/danshui/luci-app-homeproxy
+fi
+
+
+# 更新golang和node版本
+gitsvn https://github.com/sbwml/packages_lang_golang ${HOME_PATH}/feeds/packages/lang/golang
+gitsvn https://github.com/sbwml/feeds_packages_lang_node-prebuilt ${HOME_PATH}/feeds/packages/lang/node
+
+# store插件依赖
+if [[ -d "${HOME_PATH}/feeds/danshui/relevance/nas-packages/network/services" ]] && [[ ! -d "${HOME_PATH}//package/network/services/ddnsto" ]]; then
+  mv ${HOME_PATH}/feeds/danshui/relevance/nas-packages/network/services/* ${HOME_PATH}/package/network/services
+fi
+if [[ -d "${HOME_PATH}/feeds/danshui/relevance/nas-packages/multimedia/ffmpeg-remux" ]] && [[ ! -d "${HOME_PATH}/feeds/packages/multimedia/ffmpeg-remux" ]]; then
+  mv ${HOME_PATH}/feeds/danshui/relevance/nas-packages/multimedia/ffmpeg-remux ${HOME_PATH}/feeds/packages/multimedia/ffmpeg-remux
+fi
+
+# tproxy补丁
+source ${HOME_PATH}/build/common/Share/tproxy/nft_tproxy.sh
+
+# 降低luci-app-ssr-plus的shadowsocks-rust版本
+if [[ "${REPO_BRANCH}" == *"18.06"* ]] || [[ "${REPO_BRANCH}" == *"19.07"* ]] || [[ "${REPO_BRANCH}" == *"21.02"* ]] || [[ "${REPO_BRANCH}" == *"22.03"* ]]; then
+   gitsvn https://github.com/281677160/common/blob/main/Share/shadowsocks-rust/Makefile ${HOME_PATH}/feeds/danshui/luci-app-ssr-plus/shadowsocks-rust/Makefile
+fi
+
+if [[ ! -d "${HOME_PATH}/feeds/packages/lang/rust" ]]; then
+    gitsvn https://github.com/openwrt/packages/tree/openwrt-23.05/lang/rust ${HOME_PATH}/feeds/packages/lang/rust
+fi
+
+if [[ ! -d "${HOME_PATH}/feeds/packages/devel/packr" ]]; then
+  gitsvn https://github.com/281677160/common/tree/main/Share/packr ${HOME_PATH}/feeds/packages/devel/packr
 fi
 
 # files大法，设置固件无烦恼
@@ -453,8 +478,7 @@ if [ -n "$(ls -A "${BUILD_PATH}/diy" 2>/dev/null)" ]; then
   cp -Rf ${BUILD_PATH}/diy/* ${HOME_PATH}
 fi
 if [ -n "$(ls -A "${BUILD_PATH}/files" 2>/dev/null)" ]; then
-  [[ -d "${HOME_PATH}/files" ]] && rm -rf ${HOME_PATH}/files
-  cp -Rf ${BUILD_PATH}/files ${HOME_PATH}/files
+  cp -Rf ${BUILD_PATH}/files ${HOME_PATH}
 fi
 
 # 定时更新固件的插件包
@@ -466,6 +490,20 @@ else
     sed -i 's?luci-app-autoupdate??g' ${HOME_PATH}/include/target.mk
   fi
 fi
+
+# N1类型固件修改
+if [[ -f "${HOME_PATH}/target/linux/armsr/Makefile" ]]; then
+  sed -i "s?FEATURES+=.*?FEATURES+=targz?g" ${HOME_PATH}/target/linux/armsr/Makefile
+elif [[ -f "${HOME_PATH}/target/linux/armvirt/Makefile" ]]; then
+  sed -i "s?FEATURES+=.*?FEATURES+=targz?g" ${HOME_PATH}/target/linux/armvirt/Makefile
+fi
+
+# 给固件保留配置更新固件的保留项目
+cat >> "${KEEPD_PATH}" <<-EOF
+/etc/config/AdGuardHome.yaml
+/www/luci-static/argon/background
+/etc/smartdns/custom.conf
+EOF
 }
 
 
@@ -479,8 +517,6 @@ else
   TIME r "SSH连接固件输入命令'openwrt'可进行修改后台IP，清空密码和还原出厂设置操作"
 fi
 TIME r ""
-TIME g "CPU性能：8370C > 8272CL > 8171M > E5系列"
-TIME r ""
 }
 
 
@@ -489,10 +525,6 @@ cd ${HOME_PATH}
 if [[ -d "${HOME_PATH}/feeds/danshui/luci-app-qmodem/driver" ]]; then
   rm -rf ${HOME_PATH}/package/wwan/driver
 fi
-
-# luci-app-ssr-plus的shadowsocks-rust版本（1.23.0）编译错误，拉取1.22.0使用
-gitsvn https://github.com/fw876/helloworld/blob/d6bc31754ac228422ee6f03a692568f7dcdd08c3/shadowsocks-rust/Makefile ${HOME_PATH}/feeds/danshui/luci-app-ssr-plus/shadowsocks-rust/Makefile
-gitsvn https://github.com/fw876/helloworld/blob/d6bc31754ac228422ee6f03a692568f7dcdd08c3/shadowsocks-rust/Makefile ${HOME_PATH}/feeds/danshui/relevance/passwall-packages/shadowsocks-rust/Makefile
 }
 
 
@@ -507,13 +539,11 @@ fi
 if [[ "${REPO_BRANCH}" == *"23.05"* ]]; then
    # luci-app-ssr-plus的shadowsocks-rust版本（1.23.0）编译错误，拉取1.22.0使用
    gitsvn https://github.com/fw876/helloworld/blob/d6bc31754ac228422ee6f03a692568f7dcdd08c3/shadowsocks-rust/Makefile ${HOME_PATH}/feeds/danshui/luci-app-ssr-plus/shadowsocks-rust/Makefile
-   gitsvn https://github.com/fw876/helloworld/blob/d6bc31754ac228422ee6f03a692568f7dcdd08c3/shadowsocks-rust/Makefile ${HOME_PATH}/feeds/danshui/relevance/passwall-packages/shadowsocks-rust/Makefile
    gitsvn https://github.com/openwrt/packages/tree/openwrt-23.05/lang/rust ${HOME_PATH}/feeds/packages/lang/rust
 fi
 if [[ "${REPO_BRANCH}" == *"24.10"* ]]; then
   # luci-app-ssr-plus的shadowsocks-rust版本（1.23.0）编译错误，拉取1.22.0使用
   gitsvn https://github.com/fw876/helloworld/blob/d6bc31754ac228422ee6f03a692568f7dcdd08c3/shadowsocks-rust/Makefile ${HOME_PATH}/feeds/danshui/luci-app-ssr-plus/shadowsocks-rust/Makefile
-  gitsvn https://github.com/fw876/helloworld/blob/d6bc31754ac228422ee6f03a692568f7dcdd08c3/shadowsocks-rust/Makefile ${HOME_PATH}/feeds/danshui/relevance/passwall-packages/shadowsocks-rust/Makefile
   gitsvn https://github.com/coolsnowwolf/lede/tree/master/package/libs/mbedtls ${HOME_PATH}/package/libs/mbedtls
   gitsvn https://github.com/coolsnowwolf/lede/tree/master/package/libs/ustream-ssl ${HOME_PATH}/package/libs/ustream-ssl
   gitsvn https://github.com/coolsnowwolf/lede/tree/master/package/libs/uclient ${HOME_PATH}/package/libs/uclient
@@ -558,7 +588,6 @@ fi
 if [[ "${REPO_BRANCH}" == *"23.05"* ]]; then
    # luci-app-ssr-plus的shadowsocks-rust版本（1.23.0）编译错误，拉取1.22.0使用
    gitsvn https://github.com/fw876/helloworld/blob/d6bc31754ac228422ee6f03a692568f7dcdd08c3/shadowsocks-rust/Makefile ${HOME_PATH}/feeds/danshui/luci-app-ssr-plus/shadowsocks-rust/Makefile
-   gitsvn https://github.com/fw876/helloworld/blob/d6bc31754ac228422ee6f03a692568f7dcdd08c3/shadowsocks-rust/Makefile ${HOME_PATH}/feeds/danshui/relevance/passwall-packages/shadowsocks-rust/Makefile
 fi
 if [[ "${REPO_BRANCH}" =~ (main|master|openwrt-24.10) ]]; then
   gitsvn https://github.com/WJQWRT/common/blob/main/Share/luci-app-nginx-pingos/Makefile ${HOME_PATH}/feeds/danshui/luci-app-nginx-pingos/Makefile
@@ -566,7 +595,7 @@ fi
 }
 
 
-function Diy_PADAVANONLY() {
+function Diy_MT798X() {
 cd ${HOME_PATH}
 }
 
@@ -578,14 +607,8 @@ cd ${HOME_PATH}
 
 ./scripts/feeds update -a
 
-if [[ "${OpenClash_branch}" == "1" ]]; then
-  gitsvn https://github.com/vernesong/OpenClash/tree/dev ${HOME_PATH}/package/OpenClash
-else
-  gitsvn https://github.com/vernesong/OpenClash/tree/master ${HOME_PATH}/package/OpenClash
-fi
-
 # 正在执行插件语言修改
-if [[ -f "${LUCI_BANBEN}" ]]; then
+if [[ -d "${HOME_PATH}/feeds/luci/modules/luci-mod-system" ]]; then
   cp -Rf ${HOME_PATH}/build/common/language/zh_Hans.sh ${HOME_PATH}/zh_Hans.sh
   /bin/bash zh_Hans.sh && rm -rf zh_Hans.sh
 else
@@ -854,33 +877,25 @@ fi
 echo "amlogic_model=${amlogic_model}" >> ${GITHUB_ENV}
 echo "amlogic_kernel=${amlogic_kernel}" >> ${GITHUB_ENV}
 echo "auto_kernel=${auto_kernel}" >> ${GITHUB_ENV}
-echo "rootfs_size=${rootfs_size}" >> ${GITHUB_ENV}
+echo "openwrt_size=${rootfs_size}" >> ${GITHUB_ENV}
 echo "kernel_repo=ophub/kernel" >> ${GITHUB_ENV}
 echo "kernel_usage=${kernel_usage}" >> ${GITHUB_ENV}
+echo "builder_name=ophub" >> ${GITHUB_ENV}
 [[ -f "${GITHUB_ENV}" ]] && source ${GITHUB_ENV}
 
 
-if [[ "${Mandatory_theme}" == "0" ]] || [[ -z "${Mandatory_theme}" ]]; then
-  echo "不进行,替换bootstrap主题设置"
-elif [[ -n "${Mandatory_theme}" ]]; then
-  zt_theme="luci-theme-${Mandatory_theme}"
-  if [[ `find . -type d -name "${zt_theme}" |grep -v 'dir' |grep -c "${zt_theme}"` -ge "1" ]]; then
-    if [[ -f "${HOME_PATH}/extra/luci/collections/luci/Makefile" ]]; then
-      zt2_theme="$(grep -Eo "luci-theme.*" "${HOME_PATH}/extra/luci/collections/luci/Makefile" |cut -d ' ' -f1)"
-      [[ -n "${zt2_theme}" ]] && sed -i "s?${zt2_theme}?${zt_theme}?g" "${HOME_PATH}/extra/luci/collections/luci/Makefile"
-    fi
-    if [[ -f "${HOME_PATH}/feeds/luci/collections/luci/Makefile" ]]; then
-      zt2_theme="$(grep -Eo "luci-theme.*" "${HOME_PATH}/feeds/luci/collections/luci/Makefile" |cut -d ' ' -f1)"
-      [[ -n "${zt2_theme}" ]] && sed -i "s?${zt2_theme}?${zt_theme}?g" "${HOME_PATH}/feeds/luci/collections/luci/Makefile"
-    fi
-    if [[ -f "${HOME_PATH}/feeds/luci/collections/luci-light/Makefile" ]]; then
-      zt2_theme="$(grep -Eo "luci-theme.*" "${HOME_PATH}/feeds/luci/collections/luci-light/Makefile" |cut -d ' ' -f1)"
-      [[ -n "${zt2_theme}" ]] && sed -i "s?${zt2_theme}?${zt_theme}?g" "${HOME_PATH}/feeds/luci/collections/luci-light/Makefile"
-    fi
-    echo "替换必须主题完成,您现在的必选主题为：${zt_theme}"
+if [[ -n "${Mandatory_theme}" ]]; then
+  SEARCH_DIRS=("${HOME_PATH}/package" "${HOME_PATH}/feeds")
+  TARGET_DIR="luci-theme-${Mandatory_theme}"
+  if find "${SEARCH_DIRS[@]}" -type d -name "$TARGET_DIR" -print -quit | grep -q .; then
+    [[ -f "${HOME_PATH}/feeds/luci/collections/luci/Makefile" ]] && sed -i -E "s/(\+luci-theme-)[^ \\]*/\1${Mandatory_theme}/g" "${HOME_PATH}/feeds/luci/collections/luci/Makefile"
+    [[ -f "${HOME_PATH}/feeds/luci/collections/luci-light/Makefile" ]] && sed -i -E "s/(\+luci-theme-)[^ \\]*/\1${Mandatory_theme}/g" "${HOME_PATH}/feeds/luci/collections/luci-light/Makefile"
+    echo "替换必须主题完成,您现在的必选主题为：${TARGET_DIR}"
   else
-    echo "TIME r \"源码内没发现${zt_theme}此主题存在,不进行替换bootstrap主题操作\"" >> ${HOME_PATH}/CHONGTU
+    echo "未找到 $TARGET_DIR 文件夹，无需操作."
   fi
+else
+  echo "不进行,替换bootstrap主题设置"
 fi
 }
 
@@ -1204,9 +1219,11 @@ if ! grep -q "auto-scripts=y" ${HOME_PATH}/.config; then
   echo -e "\nCONFIG_PACKAGE_auto-scripts=y" >> ${HOME_PATH}/.config
 fi
 
-#if [[ "${REPO_BRANCH}" == *"22.03"* ]]; then
-#  sed -i '/ipv6helper=y/d' "${HOME_PATH}/.config"
-#fi
+if [[ `grep -c "CONFIG_PACKAGE_libopenssl-afalg_sync=y" ${HOME_PATH}/.config` -eq '1' ]]; then
+  if [[ `grep -c "CONFIG_PACKAGE_libopenssl-devcrypto=y" ${HOME_PATH}/.config` -eq '1' ]]; then
+    sed -i 's/CONFIG_PACKAGE_libopenssl-devcrypto=y/# CONFIG_PACKAGE_libopenssl-devcrypto is not set/g' ${HOME_PATH}/.config
+  fi
+fi
 
 if [[ `grep -c "CONFIG_PACKAGE_dnsmasq_full_nftset=y" ${HOME_PATH}/.config` -eq '1' ]]; then
   if [[ `grep -c "CONFIG_PACKAGE_luci-app-passwall2_Nftables_Transparent_Proxy=y" ${HOME_PATH}/.config` -eq '1' ]]; then
@@ -1261,10 +1278,12 @@ if [[ -n "$(grep -Eo 'CONFIG_TARGET.*x86.*64.*=y' ${HOME_PATH}/.config)" ]]; the
   export TARGET_PROFILE="x86-64"
 elif [[ -n "$(grep -Eo 'CONFIG_TARGET.*x86.*=y' ${HOME_PATH}/.config)" ]]; then
   export TARGET_PROFILE="x86-32"
+elif [[ -n "$(grep -Eo 'CONFIG_TARGET.*DEVICE.*phicomm.*n1=y' ${HOME_PATH}/.config)" ]]; then
+  export TARGET_PROFILE="phicomm_n1"
 elif [[ -n "$(grep -Eo 'CONFIG_TARGET.*armsr.*armv8.*=y' ${HOME_PATH}/.config)" ]]; then
-  export TARGET_PROFILE="Armvirt_64"
+  export TARGET_PROFILE="aarch_64"
 elif [[ -n "$(grep -Eo 'CONFIG_TARGET.*armvirt.*64.*=y' ${HOME_PATH}/.config)" ]]; then
-  export TARGET_PROFILE="Armvirt_64"
+  export TARGET_PROFILE="aarch_64"
 elif [[ -n "$(grep -Eo 'CONFIG_TARGET.*DEVICE.*=y' ${HOME_PATH}/.config)" ]]; then
   export TARGET_PROFILE="$(grep -Eo "CONFIG_TARGET.*DEVICE.*=y" ${HOME_PATH}/.config | sed -r 's/.*DEVICE_(.*)=y/\1/')"
 else
@@ -1326,7 +1345,7 @@ elif [[ -n "${Default_theme}" ]]; then
   fi
 fi
 
-if [[ "${TARGET_PROFILE}" == "Armvirt_64" ]]; then
+if [[ "${TARGET_PROFILE}" == "aarch_64" ]]; then
   echo "AMLOGIC_CODE=AMLOGIC" >> ${GITHUB_ENV}
   export PACKAGING_FIRMWARE="${UPDATE_FIRMWARE_ONLINE}"
   echo "PACKAGING_FIRMWARE=${UPDATE_FIRMWARE_ONLINE}" >> ${GITHUB_ENV}
@@ -1488,9 +1507,10 @@ cat >"${RELEVANCE}/${SOURCE}.ini" <<-EOF
 amlogic_model="${amlogic_model}"
 amlogic_kernel="${amlogic_kernel}"
 auto_kernel="${auto_kernel}"
-rootfs_size="${rootfs_size}"
+openwrt_size="${openwrt_size}"
 kernel_repo="${kernel_repo}"
 kernel_usage="${kernel_usage}"
+builder_name="${builder_name}"
 FOLDER_NAME="${FOLDER_NAME}"
 SOURCE="${SOURCE}"
 UPLOAD_FIRMWARE="${UPLOAD_FIRMWARE}"
@@ -1506,10 +1526,10 @@ git push --force "https://${REPO_TOKEN}@github.com/${GIT_REPOSITORY}" HEAD:main
 }
 
 function firmware_jiance() {
-if [[ "${TARGET_PROFILE}" == "Armvirt_64" ]] && [[ `ls -1 "${FIRMWARE_PATH}" |grep -c ".*.tar.gz"` -eq '1' ]] && [[ "${PACKAGING_FIRMWARE}" == "true" ]]; then
+if [[ "${TARGET_PROFILE}" == "aarch_64" ]] && [[ `ls -1 "${FIRMWARE_PATH}" |grep -c ".*.tar.gz"` -eq '1' ]] && [[ "${PACKAGING_FIRMWARE}" == "true" ]]; then
   mkdir -p "${HOME_PATH}/targz"
   cp -rf ${FIRMWARE_PATH}/*.tar.gz ${HOME_PATH}/targz/${SOURCE}-armvirt-64-default-rootfs.tar.gz
-elif [[ "${TARGET_PROFILE}" == "Armvirt_64" ]] && [[ `ls -1 "${FIRMWARE_PATH}" |grep -c ".*.tar.gz"` -eq '0' ]] && [[ "${PACKAGING_FIRMWARE}" == "true" ]]; then
+elif [[ "${TARGET_PROFILE}" == "aarch_64" ]] && [[ `ls -1 "${FIRMWARE_PATH}" |grep -c ".*.tar.gz"` -eq '0' ]] && [[ "${PACKAGING_FIRMWARE}" == "true" ]]; then
   echo "PACKAGING_FIRMWARE=false" >> ${GITHUB_ENV}
   TIME r "没发现armvirt-64-default-rootfs.tar.gz包存在，关闭自动打包操作"
 fi
@@ -1524,7 +1544,7 @@ cd ${GITHUB_WORKSPACE}
 export FIRMWARE_PATH="${HOME_PATH}/bin/targets/armvirt/64"
 [[ -z "${amlogic_model}" ]] && export amlogic_model="s905d"
 [[ -z "${auto_kernel}" ]] && export auto_kernel="true"
-[[ -z "${rootfs_size}" ]] && export rootfs_size="2560"
+[[ -z "${openwrt_size}" ]] && export openwrt_size="2560"
 export kernel_repo="ophub/kernel"
 [[ -z "${kernel_usage}" ]] && export kernel_usage="stable"
 [[ -z "${UPLOAD_WETRANSFER}" ]] && export UPLOAD_WETRANSFER="true"
@@ -1538,7 +1558,7 @@ export gh_token="${REPO_TOKEN}"
 echo "芯片型号：${amlogic_model}"
 echo "使用内核：${amlogic_kernel}"
 echo "自动检测：${auto_kernel}"
-echo "rootfs大小：${rootfs_size}"
+echo "rootfs大小：${openwrt_size}"
 echo "内核仓库：${kernel_usage}"
 
 git clone --depth 1 https://github.com/ophub/amlogic-s9xxx-openwrt.git ${GITHUB_WORKSPACE}/amlogic
@@ -1586,9 +1606,9 @@ echo "开始打包"
 cd ${GITHUB_WORKSPACE}/amlogic
 sudo chmod +x remake
 if [[ -z "${gh_token}" ]]; then
-  sudo ./remake -b ${amlogic_model} -k ${amlogic_kernel} -a ${auto_kernel} -s ${rootfs_size} -r ${kernel_repo} -u ${kernel_usage}
+  sudo ./remake -b ${amlogic_model} -k ${amlogic_kernel} -a ${auto_kernel} -s ${openwrt_size} -r ${kernel_repo} -u ${kernel_usage} -n ${builder_name}
 else
-  sudo ./remake -b ${amlogic_model} -k ${amlogic_kernel} -a ${auto_kernel} -s ${rootfs_size} -r ${kernel_repo} -u ${kernel_usage}
+  sudo ./remake -b ${amlogic_model} -k ${amlogic_kernel} -a ${auto_kernel} -s ${openwrt_size} -r ${kernel_repo} -u ${kernel_usage} -n ${builder_name}
 fi
 if [[ 0 -eq $? ]]; then
   sudo mv -f ${GITHUB_WORKSPACE}/amlogic/openwrt/out/* ${FIRMWARE_PATH}/ && sync
@@ -1612,9 +1632,6 @@ fi
 
 function Diy_organize() {
 cd ${FIRMWARE_PATH}
-if [[ -d "${PACKAGED_OUTPUTPATH}" ]]; then
-  sudo mv -f ${PACKAGED_OUTPUTPATH}/* ${FIRMWARE_PATH}/ && sync
-fi
 mkdir -p ipk
 cp -rf $(find ${HOME_PATH}/bin/packages/ -type f -name "*.ipk") ipk/ && sync
 sudo tar -czf ipk.tar.gz ipk && sync && sudo rm -rf ipk
@@ -1637,11 +1654,6 @@ sudo rm -rf "${CLEAR_PATH}"
 function Diy_firmware() {
 echo "正在执行：整理固件,您不想要啥就删啥,删删删"
 echo "需要配合${DIY_PART_SH}文件设置使用"
-echo
-if [[ "${PACKAGING_FIRMWARE}" == "true" ]] && [[ -z "${BENDI_VERSION}" ]]; then
-  # 打包固件转换仓库
-  openwrt_armvirt
-fi
 Diy_upgrade3
 Diy_organize
 }
@@ -1692,10 +1704,12 @@ if [[ -n "$(grep -Eo 'CONFIG_TARGET.*x86.*64.*=y' build/${FOLDER_NAME}/${CONFIG_
   export TARGET_PROFILE="x86-64"
 elif [[ -n "$(grep -Eo 'CONFIG_TARGET.*x86.*=y' build/${FOLDER_NAME}/${CONFIG_FILE})" ]]; then
   export TARGET_PROFILE="x86-32"
+elif [[ -n "$(grep -Eo 'CONFIG_TARGET.*DEVICE.*phicomm.*n1=y' build/${FOLDER_NAME}/${CONFIG_FILE})" ]]; then
+  export TARGET_PROFILE="phicomm_n1"
 elif [[ -n "$(grep -Eo 'CONFIG_TARGET.*armsr.*armv8.*=y' build/${FOLDER_NAME}/${CONFIG_FILE})" ]]; then
-  export TARGET_PROFILE="Armvirt_64"
+  export TARGET_PROFILE="aarch_64"
 elif [[ -n "$(grep -Eo 'CONFIG_TARGET.*armvirt.*64.*=y' build/${FOLDER_NAME}/${CONFIG_FILE})" ]]; then
-  export TARGET_PROFILE="Armvirt_64"
+  export TARGET_PROFILE="aarch_64"
 elif [[ -n "$(grep -Eo 'CONFIG_TARGET.*DEVICE.*=y' build/${FOLDER_NAME}/${CONFIG_FILE})" ]]; then
   export TARGET_PROFILE="$(grep -Eo "CONFIG_TARGET.*DEVICE.*=y" build/${FOLDER_NAME}/${CONFIG_FILE} | sed -r 's/.*DEVICE_(.*)=y/\1/')"
 else
@@ -1822,11 +1836,11 @@ TIME b "源码分支: ${REPO_BRANCH}"
 TIME b "源码作者: ${SOURCE_OWNER}"
 TIME b "Luci版本: ${LUCI_EDITION}"
 if [[ "${AMLOGIC_CODE}" == "AMLOGIC" ]]; then
-  TIME b "编译机型: 晶晨系列"
+  TIME b "编译机型: aarch64系列"
   if [[ "${PACKAGING_FIRMWARE}" == "true" ]]; then
      TIME g "打包机型: ${amlogic_model}"
      TIME g "打包内核: ${amlogic_kernel}"
-     TIME g "分区大小: ${rootfs_size}"
+     TIME g "分区大小: ${openwrt_size}"
      if [[ "${auto_kernel}" == "true" ]]; then
        TIME g "自动检测最新内核: 是"
      else
@@ -1876,9 +1890,9 @@ if [[ ${COMPILATION_INFORMATION} == "true" ]]; then
 fi
 if [[ ${AMLOGIC_CODE} == "AMLOGIC" ]]; then
   if [[ ${PACKAGING_FIRMWARE} == "true" ]]; then
-    TIME y "N1和晶晨系列固件自动打包成 .img 固件: 开启"
+    TIME y "aarch64系列固件自动打包成 .img 固件: 开启"
   else
-    TIME r "N1和晶晨系列固件自动打包成 .img 固件: 关闭"
+    TIME r "aarch64系列固件自动打包成 .img 固件: 关闭"
   fi
 else
   if [[ ${UPDATE_FIRMWARE_ONLINE} == "true" ]]; then
@@ -1959,7 +1973,6 @@ Diy_Publicarea
 
 function Diy_menu3() {
 Diy_checkout
-Diy_Wenjian
 Diy_${SOURCE_CODE}
 }
 
