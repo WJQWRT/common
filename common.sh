@@ -31,6 +31,7 @@ else
 fi
 
 if [[ -n "${INPUTS_REPO_BRANCH}" ]]; then
+  echo "无法获取${INPUTS_REPO_BRANCH}分支，使用默认分支"
   SOURCE_CODE="${SOURCE_CODE}"
   REPO_BRANCH="${INPUTS_REPO_BRANCH}"
   CONFIG_FILE="$(echo "${INPUTS_CONFIG_FILE}" |cut -d"/" -f2)"
@@ -46,6 +47,7 @@ if [[ -n "${INPUTS_REPO_BRANCH}" ]]; then
   echo "SSH_ACTION=${INPUTS_SSH_ACTION}" >> ${GITHUB_ENV}
   WAREHOUSE_MAN="${GIT_REPOSITORY##*/}"
 else
+  echo "pass"
   SOURCE_CODE="${SOURCE_CODE}"
   REPO_BRANCH="${REPO_BRANCH}"
   CONFIG_FILE="$(echo "${CONFIG_FILE}" |cut -d"/" -f2)"
@@ -97,6 +99,21 @@ COMPILATION_INFORMATION="${COMPILATION_INFORMATION}"
 RETAIN_MINUTE="${RETAIN_MINUTE}"
 KEEP_LATEST="${KEEP_LATEST}"
 EOF
+
+# 美观输出写入的内容
+echo -e "\e[36m\e[0m ${Color}设置变量内容如下\e[0m"
+echo -e "\e[36m\e[0m ${Color}SOURCE_CODE=${SOURCE_CODE}\e[0m"
+echo -e "\e[36m\e[0m ${Color}REPO_BRANCH=${REPO_BRANCH}\e[0m"
+echo -e "\e[36m\e[0m ${Color}CONFIG_FILE=seed/${CONFIG_FILE}\e[0m"
+echo -e "\e[36m\e[0m ${Color}CPU_SELECTION=${CPU_SELECTION}\e[0m"
+echo -e "\e[36m\e[0m ${Color}INFORMATION_NOTICE=${INFORMATION_NOTICE}\e[0m"
+echo -e "\e[36m\e[0m ${Color}UPLOAD_FIRMWARE=${UPLOAD_FIRMWARE}\e[0m"
+echo -e "\e[36m\e[0m ${Color}UPLOAD_RELEASE=${UPLOAD_RELEASE}\e[0m"
+echo -e "\e[36m\e[0m ${Color}CACHEWRTBUILD_SWITCH=${CACHEWRTBUILD_SWITCH}\e[0m"
+echo -e "\e[36m\e[0m ${Color}UPDATE_FIRMWARE_ONLINE=${UPDATE_FIRMWARE_ONLINE}\e[0m"
+echo -e "\e[36m\e[0m ${Color}COMPILATION_INFORMATION=${COMPILATION_INFORMATION}\e[0m"
+echo -e "\e[36m\e[0m ${Color}RETAIN_MINUTE=${RETAIN_MINUTE}\e[0m"
+echo -e "\e[36m\e[0m ${Color}KEEP_LATEST=${KEEP_LATEST}\e[0m"
 
 if [[ -n "${BENDI_VERSION}" ]]; then
   echo "PACKAGING_FIRMWARE_BENDI=${PACKAGING_FIRMWARE}" >> "${start_path}"
