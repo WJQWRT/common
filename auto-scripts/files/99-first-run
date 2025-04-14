@@ -9,9 +9,10 @@ grep -q "x86_64" /etc/banner && sed -i "s?x86_64?$ARCHIB?g" /etc/banner
 [[ "${DISTRIBID}" == "ImmortalWrt" ]] && sed -i "s?DISTRIB_ID='ImmortalWrt'?DISTRIB_ID='OpenWrt'?g" /etc/openwrt_release
 [[ -f "/usr/lib/lua/luci/controller/ttyd.lua" ]] && sed -i 's?services?system?g' "/usr/lib/lua/luci/controller/ttyd.lua"
 grep -q "danshui" /etc/opkg/distfeeds.conf && sed -i '/danshui/d' /etc/opkg/distfeeds.conf
+grep -q "dstheme" /etc/opkg/distfeeds.conf && sed -i '/dstheme/d' /etc/opkg/distfeeds.conf
+grep -q "OpenClash" /etc/opkg/distfeeds.conf && sed -i '/OpenClash/d' /etc/opkg/distfeeds.conf
 grep -q "helloworld" /etc/opkg/distfeeds.conf && sed -i '/helloworld/d' /etc/opkg/distfeeds.conf
 grep -q "passwall" /etc/opkg/distfeeds.conf && sed -i '/passwall/d' /etc/opkg/distfeeds.conf
-grep -q "OpenClash" /etc/opkg/distfeeds.conf && sed -i '/OpenClash/d' /etc/opkg/distfeeds.conf
 grep -q "openwrt_x" /etc/opkg/distfeeds.conf && sed -i '/openwrt_x/d' /etc/opkg/distfeeds.conf
 
 if [[ -f "/etc/networkdetection" ]] && [[ `grep -c "networkdetection" /etc/crontabs/root` -eq '0' ]]; then
@@ -24,17 +25,17 @@ fi
 
 if [[ -f "/usr/share/ucode/luci/version.uc" ]]; then
 	sed -i '/export const revision/d' "/usr/share/ucode/luci/version.uc"
-	echo "export const revision = 'SOURCE - LUCI_EDITION', branch = '';" >> "/usr/share/ucode/luci/version.uc"
+	echo "export const revision = 'ZHUJI_MING - LUCI_EDITION', branch = '';" >> "/usr/share/ucode/luci/version.uc"
 fi
 
 sed -i '/DISTRIB_DESCRIPTION/d' /etc/openwrt_release
 echo "DISTRIB_DESCRIPTION='Customized_Information @ OpenWrt '" >> /etc/openwrt_release
 sed -i '/DISTRIB_SOURCECODE/d' /etc/openwrt_release
-echo "DISTRIB_SOURCECODE='SOURCE_LUCI_EDITION'" >> /etc/openwrt_release
+echo "DISTRIB_SOURCECODE='OPHUBOPENWRT'" >> /etc/openwrt_release
 sed -i '/luciversion/d' /usr/lib/lua/luci/version.lua
 echo "luciversion    = \"LUCI_EDITION\"" >> /usr/lib/lua/luci/version.lua
 sed -i '/luciname/d' /usr/lib/lua/luci/version.lua
-echo "luciname    = \"SOURCE\"" >> /usr/lib/lua/luci/version.lua
+echo "luciname    = \"ZHUJI_MING\"" >> /usr/lib/lua/luci/version.lua
 
 opkg_mirror="https://mirrors.vsean.net/openwrt"
 distfeedlist="/etc/apk/repositories.d/distfeeds.list"
@@ -61,7 +62,7 @@ elif [[ `grep -c "(<%=pcdata(ver.luciversion)%>)" "${luci_web}"` -eq '1' ]]; the
 	sed -i 's?(<%=pcdata(ver.luciversion)%>)?- <%=pcdata(ver.luciversion)%>?g' "${luci_web}"
 fi
 
-sed -i 's?=== WARNING! =====================================?=================== WARNING! ====================?g' /etc/profile
+sed -i 's?=== WARNING! =====================================?=================== WARNING! =====================?g' /etc/profile
 
 lmo_file="$({ find "/usr/lib/lua/luci/i18n" |grep "zh_Hans.lmo"; } 2>"/dev/null")"
 for b in ${lmo_file}

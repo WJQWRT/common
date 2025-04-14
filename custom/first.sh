@@ -35,24 +35,6 @@ elif [[ ! -d "shangyou" ]]; then
   exit 1
 fi
 
-[[ ! -d "repogx/build/Immortalwrt" ]] && cp -Rf shangyou/build/Immortalwrt repogx/build/Immortalwrt
-[[ ! -f "repogx/.github/workflows/Immortalwrt.yml" ]] && cp -Rf shangyou/.github/workflows/padavanonly.yml repogx/.github/workflows/Immortalwrt.yml
-
-[[ ! -d "repogx/build/Lede" ]] && cp -Rf shangyou/build/Lede repogx/build/Lede
-[[ ! -f "repogx/.github/workflows/Lede.yml" ]] && cp -Rf shangyou/.github/workflows/Lede.yml repogx/.github/workflows/Lede.yml
-
-[[ ! -d "repogx/build/Lienol" ]] && cp -Rf shangyou/build/Lienol repogx/build/Lienol
-[[ ! -f "repogx/.github/workflows/Lienol.yml" ]] && cp -Rf shangyou/.github/workflows/Lienol.yml repogx/.github/workflows/Lienol.yml
-
-[[ ! -d "repogx/build/Official" ]] && cp -Rf shangyou/build/Official repogx/build/Official
-[[ ! -f "repogx/.github/workflows/Official.yml" ]] && cp -Rf shangyou/.github/workflows/Official.yml repogx/.github/workflows/Official.yml
-
-[[ ! -d "repogx/build/Xwrt" ]] && cp -Rf shangyou/build/Xwrt repogx/build/Xwrt
-[[ ! -f "repogx/.github/workflows/Xwrt.yml" ]] && cp -Rf shangyou/.github/workflows/Xwrt.yml repogx/.github/workflows/Xwrt.yml
-
-[[ ! -d "repogx/build/padavanonly" ]] && cp -Rf shangyou/build/padavanonly repogx/build/padavanonly
-[[ ! -f "repogx/.github/workflows/padavanonly.yml" ]] && cp -Rf shangyou/.github/workflows/padavanonly.yml repogx/.github/workflows/padavanonly.yml
-
 if [[ -n "${BENDI_VERSION}" ]]; then
   rm -rf repogx/build
 else
@@ -144,8 +126,8 @@ do
       sed -i "s?${CONFIG_FILE1}?${CONFIG_FILE2}?g" ${Y}
     fi
     cp -Rf ${GITHUB_WORKSPACE}/shangyou/build/Official/* "${X}"
-  elif [ -n "$(grep 'SOURCE_CODE="PADAVANONLY"' "${a}")" ]; then
-    Y="${GITHUB_WORKSPACE}/shangyou/build/padavanonly/settings.ini"
+  elif [ -n "$(grep 'SOURCE_CODE="MT798X"' "${a}")" ]; then
+    Y="${GITHUB_WORKSPACE}/shangyou/build/Mt798x/settings.ini"
     REPO_BRANCH1="$(grep -E "REPO_BRANCH=" "${Y}" |sed 's/^[ ]*//g' |grep -v '^#' |awk '{print $(1)}' |sed 's?=?\\&?g' |sed 's?"?\\&?g')"
     CONFIG_FILE1="$(grep -E "CONFIG_FILE=" "${Y}" |sed 's/^[ ]*//g' |grep -v '^#' |awk '{print $(1)}' |sed 's?=?\\&?g' |sed 's?"?\\&?g')"
     REPO_BRANCH2="$(grep -E "REPO_BRANCH=" "${a}" |sed 's/^[ ]*//g' |grep -v '^#' |awk '{print $(1)}' |sed 's?=?\\&?g' |sed 's?"?\\&?g')"
@@ -156,7 +138,7 @@ do
     if [[ -n "${CONFIG_FILE1}" ]] && [[ -n "${CONFIG_FILE2}" ]]; then
       sed -i "s?${CONFIG_FILE1}?${CONFIG_FILE2}?g" ${Y}
     fi
-    cp -Rf ${GITHUB_WORKSPACE}/shangyou/build/padavanonly/* "${X}"
+    cp -Rf ${GITHUB_WORKSPACE}/shangyou/build/Mt798x/* "${X}"
   fi
 done
 
@@ -180,8 +162,8 @@ do
     cp -Rf ${GITHUB_WORKSPACE}/shangyou/.github/workflows/Official.yml ${f}
   elif [[ "${SOURCE_CODE1}" == "XWRT" ]]; then 
     cp -Rf ${GITHUB_WORKSPACE}/shangyou/.github/workflows/Xwrt.yml ${f}
-  elif [[ "${SOURCE_CODE1}" == "PADAVANONLY" ]]; then 
-    cp -Rf ${GITHUB_WORKSPACE}/shangyou/.github/workflows/padavanonly.yml ${f}
+  elif [[ "${SOURCE_CODE1}" == "MT798X" ]]; then 
+    cp -Rf ${GITHUB_WORKSPACE}/shangyou/.github/workflows/Mt798x.yml ${f}
   fi
   [ ! -d "${GITHUB_WORKSPACE}/operates/${a}" ] && rm -rf "${f}"
   yml_name1="$({ grep 'name:' "${f}" |sed 's/^[ ]*//g' |grep -v '^#\|^-' |awk 'NR==1'; } 2>"/dev/null")"
@@ -203,7 +185,7 @@ done
 
 for X in $(find "${GITHUB_WORKSPACE}/operates" -type d -name "relevance" |grep -v 'backups'); do
   rm -rf ${X}/{*.ini,*start}
-  echo "ACTIONS_VERSION=${ACTIONS_VERSION}" > ${X}/actions_version
+  echo "ACTIONS_VERSION=${ACTIONS_VERSION1}" > ${X}/actions_version
   echo "请勿修改和删除此文件夹内的任何文件" > ${X}/README
   echo "$(date +%Y%m%d%H%M%S)" > ${X}/start
   echo "$(date +%Y%m%d%H%M%S)" > ${X}/armsrstart
@@ -262,7 +244,7 @@ sudo rm -rf ${GITHUB_WORKSPACE}/repogx/.github/workflows/*
 cp -Rf ${GITHUB_WORKSPACE}/shangyou/.github/workflows/* ${GITHUB_WORKSPACE}/repogx/.github/workflows/
 for X in $(find "${GITHUB_WORKSPACE}/repogx" -type d -name "relevance" |grep -v 'backups'); do 
   rm -rf ${X}/{*.ini,*start}
-  echo "ACTIONS_VERSION=${ACTIONS_VERSION}" > ${X}/actions_version
+  echo "ACTIONS_VERSION=${ACTIONS_VERSION1}" > ${X}/actions_version
   echo "请勿修改和删除此文件夹内的任何文件" > ${X}/README
   echo "$(date +%Y%m%d%H%M%S)" > ${X}/start
   echo "$(date +%Y%m%d%H%M%S)" > ${X}/armsrstart
@@ -288,9 +270,13 @@ BRANCH_HEAD="$(git rev-parse --abbrev-ref HEAD)"
 if [[ "${OPERATES_BUILD}" == "1" ]]; then
   rm -rf backups
 fi
-if [[ "${GIT_REPOSITORY}" =~ (WJQWRT/build-actions|WJQWRT/autobuild) ]]; then
+
+if [[ "${GIT_REPOSITORY}" == "WJQWRT/build-action" ]]; then
   rm -rf backups
   BANBEN_SHUOMING="Update $(date +%Y.%m%d.%H%M.%S)"
+fi
+if [[ "${GIT_REPOSITORY}" == "WJQWRT/autobuild" ]]; then
+  rm -rf backups
 fi
 git add .
 git commit -m "${BANBEN_SHUOMING}"
@@ -338,7 +324,7 @@ curl -fsSL https://raw.githubusercontent.com/WJQWRT/common/main/common.sh -o com
 if [[ $? -ne 0 ]]; then
   wget -q https://raw.githubusercontent.com/WJQWRT/common/main/common.sh -O common.sh
 fi
-export ACTIONS_VERSION="$(grep -E "ACTIONS_VERSION=.*" "common.sh" |grep -Eo [0-9]+\.[0-9]+\.[0-9]+)"
+export ACTIONS_VERSION1="$(sed -nE 's/^[[:space:]]*ACTIONS_VERSION[[:space:]]*=[[:space:]]*"?([0-9.]+)"?.*/\1/p' common.sh)"
 export DIY_PART_SH="$(grep -Eo "DIY_PART_SH=.*" "common.sh" |grep '.sh' |awk 'NR==1' |cut -d'"' -f2)"
 echo "DIY_PART_SH=${DIY_PART_SH}" >> ${GITHUB_ENV}
 if [[ -n "${BENDI_VERSION}" ]]; then
@@ -377,22 +363,32 @@ elif [[ ! -f "build/${FOLDER_NAME}/relevance/actions_version" ]]; then
   export SYNCHRONISE="2"
   sleep 2
 elif [[ -f "build/${FOLDER_NAME}/relevance/actions_version" ]]; then
-  export A="$(grep -E "ACTIONS_VERSION=.*" build/${FOLDER_NAME}/relevance/actions_version |grep -Eo [0-9]+\.[0-9]+\.[0-9]+)"
-  export B="$(echo "${A}" |grep -Eo [0-9]+\.[0-9]+\.[0-9]+ |cut -d"." -f1)"
-  export C="$(echo "${ACTIONS_VERSION}" |grep -Eo [0-9]+\.[0-9]+\.[0-9]+ |cut -d"." -f1)"
-  echo " 本地版本：${A}"
-  echo " 上游版本：${ACTIONS_VERSION}"
-  if [[ "${B}" != "${C}" ]]; then
-    echo -e "\033[31m 版本号不对等,进行同步上游仓库操作 \033[0m"
+  export ACTIONS_VERSION2="$(sed -nE 's/^[[:space:]]*ACTIONS_VERSION[[:space:]]*=[[:space:]]*"?([0-9.]+)"?.*/\1/p' build/${FOLDER_NAME}/relevance/actions_version)"
+  if [[ ! "$ACTIONS_VERSION2" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+    echo -e "\033[31m $ACTIONS_VERSION2版本号格式不正确,进行同步上游仓库操作 \033[0m"
     export SYNCHRONISE="2"
     sleep 2
-  elif [[ "${A}" != "${ACTIONS_VERSION}" ]]; then
-    echo -e "\033[31m 此仓库版本号跟上游仓库不对等,进行小版本更新 \033[0m"
-    export SYNCHRONISE="1"
-    sleep 2
   else
-    export SYNCHRONISE="0"
-    echo -e "\033[32m 版本一致,继续编译固件... \033[0m"
+    export ACTIONS_VERSION1="$(sed -nE 's/^[[:space:]]*ACTIONS_VERSION[[:space:]]*=[[:space:]]*"?([0-9.]+)"?.*/\1/p' common.sh)"
+    export ACTIONS_VERSION2="$(sed -nE 's/^[[:space:]]*ACTIONS_VERSION[[:space:]]*=[[:space:]]*"?([0-9.]+)"?.*/\1/p' build/${FOLDER_NAME}/relevance/actions_version)"
+    export A1="$(echo "${ACTIONS_VERSION1}" |cut -d"." -f1)"
+    export A2="$(echo "${ACTIONS_VERSION2}" |cut -d"." -f1)"
+    export B1="$(echo "${ACTIONS_VERSION1}" |cut -d"." -f2-)"
+    export B2="$(echo "${ACTIONS_VERSION2}" |cut -d"." -f2-)"
+    echo " 本地版本：${ACTIONS_VERSION1}"
+    echo " 上游版本：${ACTIONS_VERSION2}"
+    if [[ ! "${A1}" == "${A2}" ]]; then
+      echo -e "\033[31m 版本号不对等,进行同步上游仓库操作 \033[0m"
+      export SYNCHRONISE="2"
+      sleep 2
+    elif [[ ! "${B1}" == "${B2}" ]]; then
+      echo -e "\033[31m 此仓库版本号跟上游仓库不对等,进行小版本更新 \033[0m"
+      export SYNCHRONISE="1"
+      sleep 2
+    else
+      export SYNCHRONISE="0"
+      echo -e "\033[32m 版本一致,继续编译固件... \033[0m"
+    fi
   fi
 else
   export SYNCHRONISE="0"
